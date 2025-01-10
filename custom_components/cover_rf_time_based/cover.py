@@ -180,10 +180,6 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         """Initialize the cover."""
         self._travel_time_down = travel_time_down
         self._travel_time_up = travel_time_up
-        self._open_script_entity_id = open_script_entity_id
-        self._close_script_entity_id = close_script_entity_id 
-        self._stop_script_entity_id = stop_script_entity_id
-        self._cover_entity_id = cover_entity_id
         self._send_stop_at_ends = send_stop_at_ends
         self._always_confident = always_confident
         self._device_class = device_class
@@ -192,6 +188,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         self._processing_known_position = False
         self._unique_id = device_id
         self._availability_template = availability_template
+        self.executor = self.WithCoverEntity(self, cover_entity_id) if cover_entity_id is not None else self.WithScripts(self, open_script_entity_id, close_script_entity_id, stop_script_entity_id)
 
         if name:
             self._name = name
@@ -434,30 +431,51 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         if command == "close_cover":
             cmd = "DOWN"
             self._state = False
-            if self._cover_entity_id is not None:
-                await self.hass.services.async_call("cover", "close_cover", {"entity_id": self._cover_entity_id}, False)
-            else:
-                await self.hass.services.async_call("homeassistant", "turn_on", {"entity_id": self._close_script_entity_id}, False)
+            await self.executor.close_cover()
 
         elif command == "open_cover":
             cmd = "UP"
             self._state = True
-            if self._cover_entity_id is not None:
-                await self.hass.services.async_call("cover", "open_cover", {"entity_id": self._cover_entity_id}, False)
-            else:
-                await self.hass.services.async_call("homeassistant", "turn_on", {"entity_id": self._open_script_entity_id}, False)
+            await self.executor.open_cover()
 
         elif command == "stop_cover":
             cmd = "STOP"
             self._state = True
-            if self._cover_entity_id is not None:
-                await self.hass.services.async_call("cover", "stop_cover", {"entity_id": self._cover_entity_id}, False)
-            else:
-                await self.hass.services.async_call("homeassistant", "turn_on", {"entity_id": self._stop_script_entity_id}, False)
+            await self.executor.stop_cover()
 
         _LOGGER.debug(self._name + ': ' + '_async_handle_command :: %s', cmd)
 
         # Update state of entity
         self.async_write_ha_state()
+    
+    class WithCoverEntity:
+        def __init__(self, parent, cover_entity_id):
+            self._parent = parent
+            self._cover_entity_id = cover_entity_id
+
+        async def close_cover(self):
+            await self._parent.hass.services.async_call("cover", "close_cover", {"entity_id": self._cover_entity_id}, False)
+
+        async def open_cover(self):
+            await self._parent.hass.services.async_call("cover", "open_cover", {"entity_id": self._cover_entity_id}, False)
+        
+        async def stop_cover(self):
+            await self._parent.hass.services.async_call("cover", "stop_cover", {"entity_id": self._cover_entity_id}, False)
+    
+    class WithScripts:
+        def __init__(self, parent, open_script_entity_id, close_script_entity_id, stop_script_entity_id):
+            self._parent = parent
+            self._open_script_entity_id = open_script_entity_id
+            self._close_script_entity_id = close_script_entity_id 
+            self._stop_script_entity_id = stop_script_entity_id
+
+        async def close_cover(self):
+            await self._parent.hass.services.async_call("homeassistant", "turn_on", {"entity_id": self._close_script_entity_id}, False)
+        
+        async def open_cover(self):
+            await self._parent.hass.services.async_call("homeassistant", "turn_on", {"entity_id": self._open_script_entity_id}, False)
+        
+        async def stop_cover(self):
+            await self._parent.hass.services.async_call("homeassistant", "turn_on", {"entity_id": self._stop_script_entity_id}, False)
 
 # END
