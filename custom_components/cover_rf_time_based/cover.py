@@ -1,13 +1,9 @@
 """Cover Time based, RF version."""
 import logging
-
-import voluptuous as vol
-
 from datetime import timedelta
 
-from homeassistant.core import callback
-from homeassistant.helpers import entity_platform
-from homeassistant.helpers.event import async_track_time_interval
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from homeassistant.components.cover import (
     ATTR_CURRENT_POSITION,
     ATTR_POSITION,
@@ -19,18 +15,16 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_DEVICE_CLASS,
     ATTR_ENTITY_ID,
-    ATTR_DEVICE_CLASS,
     SERVICE_CLOSE_COVER,
     SERVICE_OPEN_COVER,
     SERVICE_STOP_COVER,
-    STATE_UNAVAILABLE,
 )
-
-import homeassistant.helpers.config_validation as cv
+from homeassistant.core import callback
+from homeassistant.helpers import entity_platform
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from .travelcalculator import TravelCalculator
-from .travelcalculator import TravelStatus
+from travelcalculator import TravelCalculator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -188,15 +182,9 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         self._processing_known_position = False
         self._unique_id = device_id
         self._availability_template = availability_template
-        self.executor = self.WithCoverEntity(self, cover_entity_id) if cover_entity_id is not None else self.WithScripts(self, open_script_entity_id, close_script_entity_id, stop_script_entity_id)
-
-        if name:
-            self._name = name
-        else:
-            self._name = device_id
-
+        self._executor = self.WithCoverEntity(self, cover_entity_id) if cover_entity_id is not None else self.WithScripts(self, open_script_entity_id, close_script_entity_id, stop_script_entity_id)
+        self._name = name if name else device_id
         self._unsubscribe_auto_updater = None
-
         self.tc = TravelCalculator(self._travel_time_down, self._travel_time_up)
 
     async def async_added_to_hass(self):
@@ -429,17 +417,17 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         if command == "close_cover":
             cmd = "DOWN"
             self._state = False
-            await self.executor.close_cover()
+            await self._executor.close_cover()
 
         elif command == "open_cover":
             cmd = "UP"
             self._state = True
-            await self.executor.open_cover()
+            await self._executor.open_cover()
 
         elif command == "stop_cover":
             cmd = "STOP"
             self._state = True
-            await self.executor.stop_cover()
+            await self._executor.stop_cover()
 
         _LOGGER.debug(self._name + ': ' + '_async_handle_command :: %s', cmd)
 
