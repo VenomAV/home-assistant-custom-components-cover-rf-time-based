@@ -268,14 +268,12 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
     @property
     def is_opening(self):
         """Return if the cover is opening or not."""
-        return self.tc.is_traveling() and \
-               self.tc.travel_direction == TravelStatus.DIRECTION_UP
+        return self.tc.is_opening()
 
     @property
     def is_closing(self):
         """Return if the cover is closing or not."""
-        return self.tc.is_traveling() and \
-               self.tc.travel_direction == TravelStatus.DIRECTION_DOWN
+        return self.tc.is_closing()
 
     @property
     def is_closed(self):

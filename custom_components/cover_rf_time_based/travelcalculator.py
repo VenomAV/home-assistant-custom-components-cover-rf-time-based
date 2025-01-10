@@ -98,6 +98,12 @@ class TravelCalculator:
         """Return if cover is traveling."""
         return self.current_position() != self.travel_to_position
 
+    def is_opening(self):
+        return self.is_traveling() and self.travel_direction == TravelStatus.DIRECTION_UP
+    
+    def is_closing(self):
+        return self.is_traveling() and self.travel_direction == TravelStatus.DIRECTION_DOWN
+
     def position_reached(self):
         """Return if cover has reached designated position."""
         return self.current_position() == self.travel_to_position
