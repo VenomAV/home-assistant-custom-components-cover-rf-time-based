@@ -1,6 +1,6 @@
 import unittest
 
-from custom_components.cover_rf_time_based.travelcalculator import TravelCalculator, PositionType, TravelStatus
+from custom_components.cover_rf_time_based.travel_calculator import TravelCalculator, PositionType, TravelStatus
 
 TRAVEL_TIME_DOWN = 19.5
 TRAVEL_TIME_UP = 21

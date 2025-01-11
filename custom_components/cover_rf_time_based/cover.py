@@ -24,7 +24,7 @@ from homeassistant.helpers import entity_platform
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from travelcalculator import TravelCalculator
+from travel_calculator import TravelCalculator
 
 _LOGGER = logging.getLogger(__name__)
 
