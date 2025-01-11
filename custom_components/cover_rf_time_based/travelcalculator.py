@@ -156,7 +156,7 @@ class TravelCalculator:
 
     def current_time(self):
         """Get current time. May be modified from outside (for unit tests)."""
-        # time_set_from_outside is  used within unit tests
+        # time_set_from_outside is used within unit tests
         if self.time_set_from_outside is not None:
             return self.time_set_from_outside
         return time.time()
