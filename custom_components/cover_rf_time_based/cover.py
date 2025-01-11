@@ -192,9 +192,9 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         """ The rest is calculated from this attribute.        """
         old_state = await self.async_get_last_state()
         _LOGGER.debug(self._name + ': ' + 'async_added_to_hass :: oldState %s', old_state)
-        if (old_state is not None and self.tc is not None and old_state.attributes.get(ATTR_CURRENT_POSITION) is not None):
+        if old_state is not None and self.tc is not None and old_state.attributes.get(ATTR_CURRENT_POSITION) is not None:
             self.tc.set_position(int(old_state.attributes.get(ATTR_CURRENT_POSITION)))
-        if (old_state is not None and old_state.attributes.get(ATTR_UNCONFIRMED_STATE) is not None and not self._always_confident):
+        if old_state is not None and old_state.attributes.get(ATTR_UNCONFIRMED_STATE) is not None and not self._always_confident:
          if type(old_state.attributes.get(ATTR_UNCONFIRMED_STATE)) == bool:
            self._assume_uncertain_position = old_state.attributes.get(ATTR_UNCONFIRMED_STATE)
          else:
