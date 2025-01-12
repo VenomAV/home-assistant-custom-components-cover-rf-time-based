@@ -157,6 +157,9 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     )
 
 
+def to_bool(value):
+    return value if type(value) == bool else str(value) == str(True)
+
 class CoverTimeBased(CoverEntity, RestoreEntity):
     def __init__(self, 
                  device_id, 
@@ -195,11 +198,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         if old_state is not None and self.tc is not None and old_state.attributes.get(ATTR_CURRENT_POSITION) is not None:
             self.tc.set_position(int(old_state.attributes.get(ATTR_CURRENT_POSITION)))
         if old_state is not None and old_state.attributes.get(ATTR_UNCONFIRMED_STATE) is not None and not self._always_confident:
-         if type(old_state.attributes.get(ATTR_UNCONFIRMED_STATE)) == bool:
-           self._assume_uncertain_position = old_state.attributes.get(ATTR_UNCONFIRMED_STATE)
-         else:
-           self._assume_uncertain_position = str(old_state.attributes.get(ATTR_UNCONFIRMED_STATE)) == str(True)
-
+           self._assume_uncertain_position = to_bool(old_state.attributes.get(ATTR_UNCONFIRMED_STATE))
 
     def _handle_stop(self):
         """Handle stop button press"""
